@@ -11,14 +11,9 @@ use Storable;
 
 Log::Log4perl::init('logging.conf');
 
-$logger = Log::Log4perl->get_logger('house.bedrm.desk.topdrwr');
-    
-	    $logger->debug('this is a debug message');
-		    $logger->info('this is an info message');
-			    $logger->warn('etc');
-				    $logger->error('..');
-					    $logger->fatal('..');
+my $logger = Log::Log4perl->get_logger();
 
+$logger->debug('Checking Postmodern Jukebox for new videos');
 my $mech = WWW::Mechanize->new();
 my $stored_songs;
 my $output_dir = "./songs";
@@ -111,20 +106,21 @@ foreach my $text ( keys %targets ) {
 		next;
 		}
 
-	print "Downloading ", $text, " URL: ", $targets{$text}, "\n";
+	$logger->info("Downloading ". $text);
 	system( "youtube-dl","-xiq","https://www.youtube.com" . $targets{$text},"-o",$output_dir."/".'%(title)s.%(ext)s' );
 
 	if ( $? == -1 ) {
-		print "failed to execute: $!\n";
+		$logger->error("failed to execute: $!");
 	}
 	elsif ( $? & 127 ) {
-		printf "child died with signal %d, %s coredump\n",
-			( $? & 127 ), ( $? & 128 ) ? 'with' : 'without';
+		#printf "child died with signal %d, %s coredump\n", ( $? & 127 ), ( $? & 128 ) ? 'with' : 'without';
+		logger->error("process died");
+
 	}
 	else {
-		printf "child exited with value %d\n", $? >> 8;
 
 		unless ( $? >> 8 == "0" ) {
+		$logger->error("process exited with value". $? >> 8);
 		next;
 		}
 	}
@@ -134,4 +130,5 @@ foreach my $text ( keys %targets ) {
 
 }
 
+$logger->info("Storing new Songs in index");
 store $stored_songs, 'pmj-songs';
