@@ -6,13 +6,25 @@ use utf8;
 #youtube-dl
 
 use WWW::Mechanize;
+use Log::Log4perl;
 use Storable;
+
+Log::Log4perl::init('logging.conf');
+
+$logger = Log::Log4perl->get_logger('house.bedrm.desk.topdrwr');
+    
+	    $logger->debug('this is a debug message');
+		    $logger->info('this is an info message');
+			    $logger->warn('etc');
+				    $logger->error('..');
+					    $logger->fatal('..');
 
 my $mech = WWW::Mechanize->new();
 my $stored_songs;
+my $output_dir = "./songs";
 
 if ( -f './pmj-songs' ) {
-	my $stored_songs = retrieve('pmj-songs');
+	$stored_songs = retrieve('pmj-songs');
 }
 
 
@@ -100,7 +112,7 @@ foreach my $text ( keys %targets ) {
 		}
 
 	print "Downloading ", $text, " URL: ", $targets{$text}, "\n";
-	system( "youtube-dl","-xi","https://www.youtube.com" . $targets{$text} );
+	system( "youtube-dl","-xiq","https://www.youtube.com" . $targets{$text},"-o",$output_dir."/".'%(title)s.%(ext)s' );
 
 	if ( $? == -1 ) {
 		print "failed to execute: $!\n";
@@ -118,31 +130,8 @@ foreach my $text ( keys %targets ) {
 	}
 
 	$stored_songs->{$text} = '1' ;
-	$something_new = 1;
 	
 
 }
 
-
-__DATA__
-Are You Gonna Be My Girl - Vintage Swing Jet Cover ft. Addie Hamilton-Cdo0lfWoqws.opus
-Bad Romance - Postmodern Jukebox - Reboxed ft. Sara Niemietz & The Sole Sisters-PgupfwUeXYY.opus
-Bye Bye Bye - 60s 'Pulp Fiction' Surf Rock Style _NSYNC Cover ft. Tara Louise-qnHVMcPyMXc.opus
-Cry Me A River - Vintage '50s R&B Justin Timberlake Cover ft. Von Smith-7OBGdwT8jsQ.opus
-Ex's and Oh's - Vintage '30s Jazz Elle King Cover ft. Lisa Gary-SQ2N_VurqAk.opus
-Grenade - Vintage '60s Style Bruno Mars Cover ft. Brielle-hwsEdFkdjYA.opus
-Here - Peggy Lee - Style Postmodern Jukebox Alessia Cara Cover ft. Aubrey Logan-a2mvIwzXzAc.opus
-Heroes - Postmodern Jukebox ft. Nicole Atkins - David Bowie Cover - Grammys-foDOGeRFsCY.webm.part
-Hotline Bling - Vintage '40s Swing Drake Cover ft. Cristina Gatti-BAjaKl7xhvA.opus
-I'm Not The Only One - Postmodern Jukebox - Reboxed ft. Maiya Sykes-77z7oWTczqI.opus
-Juicy - Vintage Jazz Notorious B.I.G. Cover ft. Maiya Sykes-ZKAMdquezCk.opus
-Just Like Heaven - Vintage Glenn Miller - Style The Cure Cover ft. Natalie Angst-Fjd1seT1mMQ.opus
-My Heart Will Go On - Postmodern Jukebox  - Reboxed ft. Aubrey Logan-LZQodZXSdyw.opus
-Never Forget You - Vintage 1920s Gatsby Style Zara Larsson Cover ft. Addie Hamilton-C4PEN9AU_tM.opus
-Never Gonna Give You Up - Vintage Soul Rick Astley Cover ft. Clark Beckham - PMJ Rickroll-lPYwcTDVRAg.opus
-Pony - Vintage Jazz Ginuwine Cover ft. Ariana Savalas-bAeQ370HM1E.opus
-Postmodern Jukebox North American Fall Tour - Tix On Sale Now-NSrajK8j4Gs.opus
-Postmodern Jukebox Sings Craigslist 'Missed Connections' for Valentine's Day-Qf-kyLsAAvo.opus
-Same Old Love - Vintage New Orleans Selena Gomez Cover ft. Brielle Von Hugel-LzHO-mKHm3g.opus
-Sorry - Vintage Motown Justin Bieber Cover ft. Shoshana Bean-mphD90urEp4.opus
-
+store $stored_songs, 'pmj-songs';
