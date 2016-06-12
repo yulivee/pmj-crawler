@@ -9,12 +9,13 @@ use WWW::Mechanize;
 my $mech = WWW::Mechanize->new();
 
 
-my %del_names = (
-	www-core => 1,
-	www-pageframe => 1,
-	www-guide => 1,
-	www-home-c4 => 1,
-);
+#my %del_names = (
+#	'www-core' => 1,
+#	'www-pageframe' => 1,
+#	'www-guide' => 1,
+#	'www-home-c4' => 1,
+#);
+
 
 my %del_text = (
 '' => 1,
@@ -57,26 +58,40 @@ my %del_text = (
 'YouTuber' => 1,
 );
 
+my @del_phrases = qw(Announcement);
+
 my $url = "https://www.youtube.com/user/ScottBradleeLovesYa/videos";
 $mech->get($url);
 my @links = $mech->links();
-my %links = map { $_ => 1 } @links;
 
 
 my %targets;
 
 foreach my $a_link ( @links ) {
-	print "\n";
-	print "-"x80,"\n";
-	print "Text: ", $a_link->text,"\n";
-	print "URL: ", $a_link->url,"\n";
-	print "Name: ", $a_link->name,"\n";
+	#print "\n";
+	#print "-"x80,"\n";
 
-	if ( exists $del_text{$a_link->text} || exists $del_name{$a_link->name} ) {
+	next if !defined $a_link->text ;
+	#if ( exists $del_text{$a_link->text} || exists $del_names{$a_link->name} ) {
+	if ( exists $del_text{$a_link->text}) {
 		next;
-	}
+	} else {
+
+my $regex .= join "|", @del_phrases;
+if ( $a_link->text =~ m/$regex/) {
+
+     next;
+
+  } 
+
+
+}
 
 	$targets{$a_link->text} = $a_link->url;
-	
+}
 
+
+foreach my $text ( keys %targets ) {
+	print "Downloading ", $text, " URL: ", $targets{$text},"\n";
+	system("youtube-dl -xi https://www.youtube.com".$targets{$text});
 }
